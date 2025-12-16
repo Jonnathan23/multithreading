@@ -3,17 +3,9 @@ from typing import List, Tuple
 
 from Parallel import Parallel
 from Sequential import Sequential
+from utils.utils import showTableTimeComparative
 
-def showTableTimeComparative(data: List[Tuple[str, float, int]]) -> None:
-    print("\n--- COMPARATIVA DE TIEMPOS DE EJECUCIÓN ---")
-    print(f"{'Test':<20} | {'Procesos':<8} | {'Tiempo (segundos)':<18}")
-    print("-" * 50)
-    for name, time_val, processes in data:
-        # Usamos 'processes' en lugar de 'hilos'
-        print(f"{name:<20} | {processes:<8} | {time_val:.6f}")
-    print("-" * 50)
-    print(f"Dimensión: {DIMENSION}x{DIMENSION}")
-    print("El rendimiento de la versión Paralela refleja el uso de multiprocessing (paralelismo real).")
+
 
 
 DIMENSION = 100
@@ -61,4 +53,4 @@ results.append(("Paralelo (8 Proc)", paralelo8.finalTime, 8))
 
 # 6. MOSTRAR LA TABLA COMPARATIVA
 print("\n--- FINALIZANDO EXPERIMENTO ---")
-showTableTimeComparative(results)
+showTableTimeComparative(results, DIMENSION)
