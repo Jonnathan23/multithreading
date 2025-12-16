@@ -1,8 +1,7 @@
 import threading
 import numpy as np
 import time
-# Importamos List y math (asumo que math ya estaba importado, si no, es necesario)
-from typing import List, Optional
+from typing import List
 import math 
 
 
@@ -16,6 +15,11 @@ class Parallel:
         self.matC: np.ndarray = np.zeros((self.dimension, self.dimension))
         self.finalTime: float = 0.0
 
+        # Para que el sleep no haga que el test dure 20000 segundos, reducimos la dimensión 
+        # para esta visualización.
+        if self.dimension > 100:
+             print("ADVERTENCIA: La dimensión es grande. Reduzca la dimensión o quite el time.sleep(2).")
+
         print(f"Matrices de {dimension}x{dimension}. Usando {self.num_threads} hilos.")
 
     def sumMatrices(self) -> None:
@@ -27,12 +31,13 @@ class Parallel:
         
         for t_id in range(self.num_threads):
             start_row: int = t_id * rows_per_thread
+            
             if start_row >= self.dimension:
                 break
             
-            # Calcular la fila de fin (limitada por la dimensión total)
             end_row: int = min((t_id + 1) * rows_per_thread, self.dimension)
             
+            # Crear el hilo
             newThread: threading.Thread = threading.Thread(
                 target=self.sumRows, 
                 args=(start_row, end_row)
@@ -45,18 +50,33 @@ class Parallel:
         for thread in allThreads:
             thread.join()
             
-        # Almacenar el tiempo final
         self.finalTime = self.showTime(startTime)
 
-    def sumRows(self, start_row: int, end_row: int) -> None:         
+    def sumRows(self, start_row: int, end_row: int) -> None: 
+        """
+        Método corregido para usar las convenciones modernas de threading.
+        """
+        
+        # 1. Corregido: currentThread() -> current_thread()
+        # 2. Corregido: .getName() -> .name
+        thread_name = threading.current_thread().name # Obtener el nombre del hilo de forma moderna
+        
+        # 1. Logging de inicio
+        print(f"{thread_name} --> starting (Rows: {start_row}-{end_row})")
+        
+        # 2. Dormir el hilo por 2 segundos (Simular carga pesada)
+        time.sleep(2) 
+        
+        # 3. La operación principal: Suma de matrices
         for i in range(start_row, end_row):
             for j in range(self.dimension):
                 self.matC[i][j] = self.matA[i][j] + self.matB[i][j]
                 
-    
-    def showTime(self, startTime: float) -> float:    
+        # 4. Logging de finalización
+        print(f"{thread_name} --> exiting")
+        
+            
+    def showTime(self, startTime: float) -> float: 
         endTime: float = time.time()
-        finalTime: float = endTime - startTime      
+        finalTime: float = endTime - startTime 
         return finalTime
-    
-    

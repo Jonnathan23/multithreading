@@ -1,77 +1,64 @@
-#from typing import List
-#from tabulate import tabulate
+import os
+from typing import List, Tuple
 
-#import Parallel
+from Parallel import Parallel
 from Sequential import Sequential
 
-
-
-'''
-
 def showTableTimeComparative(data: List[Tuple[str, float, int]]) -> None:
-    """
-    Genera y muestra una tabla comparativa de tiempos de ejecución.
+    print("\n--- COMPARATIVA DE TIEMPOS DE EJECUCIÓN ---")
+    print(f"{'Test':<20} | {'Procesos':<8} | {'Tiempo (segundos)':<18}")
+    print("-" * 50)
+    for name, time_val, processes in data:
+        # Usamos 'processes' en lugar de 'hilos'
+        print(f"{name:<20} | {processes:<8} | {time_val:.6f}")
+    print("-" * 50)
+    print(f"Dimensión: {DIMENSION}x{DIMENSION}")
+    print("El rendimiento de la versión Paralela refleja el uso de multiprocessing (paralelismo real).")
 
-    Args:
-        data: Una lista de tuplas con (Nombre del Test, Tiempo, Número de Hilos).
-    """
-    
-    # 1. Definir los encabezados de la tabla
-    headers = ["Test", "Hilos", "Tiempo (segundos)"]
-    
-    # 2. Convertir la lista de tuplas a formato de tabla (Lista de listas)
-    table_data = []
-    for name, time_val, threads in data:
-        # Añadimos los datos, formateando el tiempo a 6 decimales para precisión
-        table_data.append([name, threads, f"{time_val:.6f}"])
-    
-    # 3. Imprimir la tabla usando la librería 'tabulate' (si está instalada)
-    try:
-        print("\n" + "="*50)
-        print("         📊 COMPARATIVA DE TIEMPOS DE EJECUCIÓN 📊")
-        print("="*50)
-        print(tabulate(table_data, headers=headers, tablefmt="fancy_grid", numalign="center", stralign="left"))
-        print(f"\nNota: Todos los tests se ejecutaron con una dimensión de matriz de {DIMENSION}x{DIMENSION}.")
-        
-    # Si 'tabulate' no está instalada, imprime una tabla simple
-    except ImportError:
-        print("\n--- COMPARATIVA DE TIEMPOS DE EJECUCIÓN ---")
-        print(f"{'Test':<20} | {'Hilos':<5} | {'Tiempo (segundos)':<18}")
-        print("-" * 47)
-        for name, time_val, threads in data:
-            print(f"{name:<20} | {threads:<5} | {time_val:<.6f}")
-        print("-" * 47)
-    
-'''
 
-DIMENSION = 10000
+DIMENSION = 100
 
 # 1. Crear y ejecutar todas las instancias
 secuencial = Sequential(DIMENSION)
 secuencial.sumMatrices()
 
-#paralelo1 = Parallel(DIMENSION, 1) # Paralelo con 1 hilo
-#paralelo1.sumMatrices()
-#
-#paralelo4 = Parallel(DIMENSION, 4)
-#paralelo4.sumMatrices()
-#
-#paralelo8 = Parallel(DIMENSION, 8)
-#paralelo8.sumMatrices()
+NUM_CORES: int = os.cpu_count() or 4 # Obtener el número máximo de núcleos
 
-# Aquí puedes añadir más pruebas, como el número de núcleos de tu CPU
-# paralelo_max = Parallel(DIMENSION, os.cpu_count() or 8)
-# paralelo_max.sumMatrices()
+print(f"\n--- INICIANDO EXPERIMENTO ---")
+print(f"Sistema con {NUM_CORES} núcleos lógicos.")
+
+# Lista para almacenar todos los resultados (Nombre, Tiempo, Procesos)
+results: List[Tuple[str, float, int]] = []
 
 
-# 2. Recolectar los resultados en el formato: (Nombre, Tiempo, Hilos)
-#results = [
-#    ("Secuencial (Base)", secuencial.finalTime, 1),
-#    ("Paralelo (1 Hilo)", paralelo1.finalTime, 1), # Usar 'paralelo1' en lugar de 'paralelo'
-#    ("Paralelo (4 Hilos)", paralelo4.finalTime, 4),
-#    ("Paralelo (8 Hilos)", paralelo8.finalTime, 8),
-#    # ("Paralelo (Máx Hilos)", paralelo_max.finalTime, paralelo_max.num_threads),
-#]
+# 1. EJECUCIÓN SECUENCIAL (Línea Base)
+print("\n[1/5] Ejecutando Secuencial...")
+secuencial = Sequential(DIMENSION)
+secuencial.sumMatrices()
+results.append(("Secuencial (Base)", secuencial.finalTime, 1))
 
-# 3. Mostrar la tabla comparativa
-#showTableTimeComparative(results)
+
+# 2. EJECUCIÓN PARALELA con 2 Procesos
+print("\n[2/5] Ejecutando Paralelo con 2 procesos...")
+paralelo2 = Parallel(DIMENSION, 2)
+paralelo2.sumMatrices()
+results.append(("Paralelo (2 Proc)", paralelo2.finalTime, 2))
+
+
+# 3. EJECUCIÓN PARALELA con 4 Procesos
+print("\n[3/5] Ejecutando Paralelo con 4 procesos...")
+paralelo4 = Parallel(DIMENSION, 4)
+paralelo4.sumMatrices()
+results.append(("Paralelo (4 Proc)", paralelo4.finalTime, 4))
+
+
+# 4. EJECUCIÓN PARALELA con 8 Procesos
+print("\n[4/5] Ejecutando Paralelo con 8 procesos...")
+paralelo8 = Parallel(DIMENSION, 8)
+paralelo8.sumMatrices()
+results.append(("Paralelo (8 Proc)", paralelo8.finalTime, 8))
+
+
+# 6. MOSTRAR LA TABLA COMPARATIVA
+print("\n--- FINALIZANDO EXPERIMENTO ---")
+showTableTimeComparative(results)
